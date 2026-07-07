@@ -75,6 +75,24 @@ def delete_document(doc_id: str) -> int:
     return len(response.data or [])
 
 
+def get_file_name(doc_id: str) -> str:
+    """Look up the stored file name for a document, or "" if unknown.
+
+    The review endpoints only receive a ``doc_id``; the file name is recovered
+    here so the emitted Report is self-contained.
+    """
+    supabase = get_supabase()
+    response = (
+        supabase.table("api_documents")
+        .select("file_name")
+        .eq("doc_id", doc_id)
+        .limit(1)
+        .execute()
+    )
+    rows = response.data or []
+    return rows[0].get("file_name", "") if rows else ""
+
+
 def _decode(data: bytes) -> str:
     for encoding in ("utf-8", "utf-8-sig", "latin-1"):
         try:

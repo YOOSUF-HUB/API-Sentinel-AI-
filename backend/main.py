@@ -106,11 +106,14 @@ def review(request: ReviewRequest) -> StreamingResponse:
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="A question is required.")
 
+    file_name = pipeline.get_file_name(request.doc_id)
+
     def event_stream() -> Iterator[str]:
         try:
             for event in sentinel_agent.stream(
                 question=request.question,
                 doc_id=request.doc_id,
+                file_name=file_name,
                 mode=request.mode.value,
             ):
                 yield json.dumps(event) + "\n"
@@ -133,6 +136,7 @@ def report(
         return sentinel_agent.run(
             question=_DEFAULT_REPORT_QUESTION,
             doc_id=doc_id,
+            file_name=pipeline.get_file_name(doc_id),
             mode=mode.value,
         )
     except Exception as exc:  # pragma: no cover
