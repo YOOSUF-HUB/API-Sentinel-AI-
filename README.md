@@ -4,7 +4,7 @@ An **agentic RAG** system that reviews API documentation like a senior technical
 
 - **Ingest** OpenAPI/Swagger (JSON + YAML), plain text, Markdown, and PDF.
 - **Retrieve** the relevant sections with pgvector cosine search.
-- **Review** with a LangGraph agent (plan → retrieve → grade → analyze → synthesize) over Groq's `llama-3.3-70b-versatile`.
+- **Review** with a LangGraph agent (plan → retrieve → grade → analyze → synthesize) over Groq's `openai/gpt-oss-120b`.
 - **Score** deterministically into four categories with severity-tagged issues.
 - **Stream** progress and the final report to the UI over NDJSON.
 
@@ -22,7 +22,7 @@ An **agentic RAG** system that reviews API documentation like a senior technical
 └──────────────┘                 │  /report   one-shot review    /document  delete                     │
                                  └────────────────────────────────────────────────────────────────────┘
                                         │ embeddings: sentence-transformers all-MiniLM-L6-v2 (384-dim)
-                                        │ LLM: Groq llama-3.3-70b-versatile
+                                        │ LLM: Groq openai/gpt-oss-120b
                                         ▼
                                  Supabase Postgres + pgvector (api_documents, match_api_documents RPC)
 ```
@@ -46,7 +46,7 @@ Scoring is **deterministic** and rule-based (`backend/agents/tools.py`): CRITICA
 | Frontend | Next.js 14 (App Router) · TypeScript · Tailwind CSS |
 | Backend | FastAPI · Uvicorn |
 | Agent | LangGraph · langchain-core |
-| LLM | Groq — `llama-3.3-70b-versatile` |
+| LLM | Groq — `openai/gpt-oss-120b` |
 | Embeddings | sentence-transformers `all-MiniLM-L6-v2` (384-dim, normalized) |
 | Vector store | Supabase (Postgres + `pgvector`) |
 | Parsing | PyYAML · prance · openapi-spec-validator · pdfplumber |
@@ -97,7 +97,7 @@ Backend `.env`:
 | Variable | Purpose | Default |
 |---|---|---|
 | `GROQ_API_KEY` | Groq LLM access (**required**) | — |
-| `GROQ_MODEL` | LLM model | `llama-3.3-70b-versatile` |
+| `GROQ_MODEL` | LLM model | `openai/gpt-oss-120b` |
 | `SUPABASE_URL` | Supabase project URL (**required**) | — |
 | `SUPABASE_KEY` | Supabase **service_role** key (**required**) | — |
 | `EMBEDDING_MODEL` | sentence-transformers model | `all-MiniLM-L6-v2` |
