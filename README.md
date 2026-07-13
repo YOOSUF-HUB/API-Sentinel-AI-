@@ -117,6 +117,42 @@ npm run dev                         # http://localhost:3000
 
 ---
 
+## Deployment
+
+The two halves deploy independently; Supabase is already hosted, so there is no database to deploy.
+
+### Backend (Render)
+
+Deploy `backend/` as a **Web Service** on [Render](https://render.com). The `.python-version` files (3.12.8) pin the Python runtime Render uses.
+
+| Setting | Value |
+|---|---|
+| Root directory | `backend` |
+| Build command | `pip install -r requirements.txt` |
+| Start command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| Environment | `GROQ_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY` (+ optional `GROQ_MODEL`, `EMBEDDING_MODEL`) |
+
+### Frontend (Vercel)
+
+Import the repo into [Vercel](https://vercel.com) with `frontend` as the root directory (Next.js is auto-detected). Set `NEXT_PUBLIC_API_URL` to the deployed backend URL.
+
+Once both are live, tighten CORS in `backend/main.py` — it currently ships with `allow_origins=["*"]`; restrict it to the frontend domain.
+
+### ⚠️ Free-tier limitation: local embeddings
+
+Embeddings are computed **in-process** with sentence-transformers **`all-MiniLM-L6-v2`** (384-dim, normalized). That means the backend imports PyTorch and downloads the ~90 MB model on first use — and this **does not work well on free-tier hosting**:
+
+- **Memory** — Render's free instances have 512 MB RAM; loading torch + the model routinely exceeds that and the process gets OOM-killed mid-request.
+- **Cold starts** — free instances spin down when idle. Every wake-up re-loads (and may re-download) the model, so the first upload/review can take minutes or time out.
+- **CPU-only inference** — embedding a large spec chunk-by-chunk is slow without a beefier instance.
+
+Options:
+
+1. **Paid instance** — anything with ≥ 2 GB RAM (e.g. Render Standard) runs the model comfortably.
+2. **Hosted embeddings API** — swap `backend/rag/embedder.py` for a remote embeddings provider so the backend stays lightweight. If the new model isn't 384-dim, update `EMBEDDING_DIM` in `backend/config.py` **and** the `vector(384)` column + RPC in `supabase_setup.sql` to match.
+
+---
+
 ## API
 
 | Method | Route | Body / Params | Returns |
