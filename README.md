@@ -1,5 +1,7 @@
 # 🛡️ API Sentinel AI
 
+> **🚀 Live deployment:** [api-sentinel-ai.vercel.app](https://api-sentinel-ai.vercel.app/)
+
 An **agentic RAG** system that reviews API documentation like a senior technical reviewer. Upload an API specification and Sentinel ingests it into a vector store, then runs a 5-node LangGraph agent that surfaces **security, documentation, and best-practice** issues as a scored, categorized report.
 
 - **Ingest** OpenAPI/Swagger (JSON + YAML), plain text, Markdown, and PDF.
@@ -119,24 +121,9 @@ npm run dev                         # http://localhost:3000
 
 ## Deployment
 
-The two halves deploy independently; Supabase is already hosted, so there is no database to deploy.
+**API Sentinel AI is deployed live at [api-sentinel-ai.vercel.app](https://api-sentinel-ai.vercel.app/).**
 
-### Backend (Render)
-
-Deploy `backend/` as a **Web Service** on [Render](https://render.com). The `.python-version` files (3.12.8) pin the Python runtime Render uses.
-
-| Setting | Value |
-|---|---|
-| Root directory | `backend` |
-| Build command | `pip install -r requirements.txt` |
-| Start command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
-| Environment | `GROQ_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY` (+ optional `GROQ_MODEL`, `EMBEDDING_MODEL`) |
-
-### Frontend (Vercel)
-
-Import the repo into [Vercel](https://vercel.com) with `frontend` as the root directory (Next.js is auto-detected). Set `NEXT_PUBLIC_API_URL` to the deployed backend URL.
-
-Once both are live, tighten CORS in `backend/main.py` — it currently ships with `allow_origins=["*"]`; restrict it to the frontend domain.
+The frontend is hosted on **Vercel** and the backend runs on **Render** (Python 3.12.8, pinned via `.python-version`), with **Supabase** hosting the Postgres + pgvector database.
 
 ### ⚠️ Free-tier limitation: local embeddings
 
