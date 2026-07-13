@@ -1,0 +1,205 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TaskFlow API",
+    "version": "1.0.0",
+    "description": "A task and team management API. Users can register, authenticate, manage projects, and assign tasks to teammates."
+  },
+  "servers": [
+    { "url": "http://api.taskflow.example.com/v1", "description": "Production" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyQuery": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 42 },
+          "email": { "type": "string", "example": "jane@example.com" },
+          "full_name": { "type": "string", "example": "Jane Doe" },
+          "password": { "type": "string", "example": "hunter2" },
+          "ssn": { "type": "string", "example": "123-45-6789" },
+          "role": { "type": "string", "example": "admin" }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "owner_id": { "type": "integer" }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "status": { "type": "string", "example": "open" },
+          "assignee_id": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created user, including the plaintext password that was submitted.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "summary": "Log in",
+        "description": "Pass the email and password as query parameters to receive an access token.",
+        "parameters": [
+          { "name": "email", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "password", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "A token the client can reuse.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "token": { "type": "string" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "List all users",
+        "responses": {
+          "200": {
+            "description": "Every user in the system, including password and SSN fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "delete": {
+        "summary": "Delete a user",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "User deleted." }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "summary": "List projects",
+        "security": [{ "ApiKeyQuery": [] }],
+        "responses": {
+          "200": {
+            "description": "Projects visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Project" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a project",
+        "security": [{ "ApiKeyQuery": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Project" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created." }
+        }
+      }
+    },
+    "/projects/{projectId}/tasks": {
+      "get": {
+        "summary": "List tasks in a project",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tasks for the project.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Task" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a task",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Task" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "" }
+        }
+      }
+    }
+  }
+}
