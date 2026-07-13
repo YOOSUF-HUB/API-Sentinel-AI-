@@ -1,5 +1,6 @@
 -- Run this in the Supabase SQL editor before starting the backend.
 -- This sets up the database schema for storing API documentation chunks and their embeddings.
+
 create extension if not exists vector;
 
 create table if not exists api_documents (
