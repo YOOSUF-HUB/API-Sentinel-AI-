@@ -14,6 +14,7 @@ per-node progress events followed by the final report, for the streaming
 """
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Dict, Iterator, List, Optional, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -111,14 +112,101 @@ def _build_graph():
 
 _GRAPH = _build_graph()
 
-# Human-readable labels for streamed progress events.
-_NODE_LABELS = {
-    "query_planner": "Planning sub-questions",
-    "retriever": "Retrieving relevant sections",
-    "relevance_grader": "Grading relevance",
-    "analyzer": "Analyzing for issues",
-    "synthesizer": "Synthesizing report",
-}
+# The graph's linear node order, with human-readable labels. Streamed up front as
+# a `pipeline` event so the client can render every step before any of them runs,
+# and so the node order lives here rather than being duplicated in the frontend.
+_PIPELINE: List[Dict[str, str]] = [
+    {"node": "query_planner", "label": "Planning sub-questions"},
+    {"node": "retriever", "label": "Retrieving relevant sections"},
+    {"node": "relevance_grader", "label": "Grading relevance"},
+    {"node": "analyzer", "label": "Analyzing for issues"},
+    {"node": "synthesizer", "label": "Synthesizing report"},
+]
+
+_NODE_LABELS = {step["node"]: step["label"] for step in _PIPELINE}
+
+
+# ---------------------------------------------------------------------------
+# Progress detail
+# ---------------------------------------------------------------------------
+# Each node already computes far more than "it finished": the planner's actual
+# sub-questions, the grader's kept/dropped split, the analyzer's reasoning. The
+# builders below lift that out of the state delta and onto the progress event so
+# the UI can show the agent's work instead of a spinner. No extra LLM calls; this
+# is data that would otherwise be discarded.
+def _planner_detail(partial: Dict[str, Any]) -> Dict[str, Any]:
+    return {"sub_questions": list(partial.get("sub_questions") or [])}
+
+
+def _retriever_detail(partial: Dict[str, Any]) -> Dict[str, Any]:
+    chunks: List[RetrievedChunk] = partial.get("retrieved") or []
+    return {
+        "retrieved": len(chunks),
+        "section_types": sorted({c.section_type for c in chunks}),
+        "top_similarity": round(max((c.similarity for c in chunks), default=0.0), 3),
+        "top_k": settings.TOP_K,
+    }
+
+
+def _grader_detail(partial: Dict[str, Any], retrieved_count: int) -> Dict[str, Any]:
+    kept: List[RetrievedChunk] = partial.get("graded") or []
+    return {
+        "retrieved": retrieved_count,
+        "kept": len(kept),
+        "dropped": max(retrieved_count - len(kept), 0),
+        "threshold": settings.RELEVANCE_THRESHOLD,
+        # Locations only — never chunk content, which would bloat the stream.
+        "kept_chunks": [
+            {
+                "location": c.endpoint_path or c.section_type,
+                "section_type": c.section_type,
+                "relevance": round(c.relevance, 3),
+            }
+            for c in kept
+        ],
+    }
+
+
+def _analyzer_detail(partial: Dict[str, Any]) -> Dict[str, Any]:
+    analysis: Dict[str, Any] = partial.get("analysis") or {}
+    issues = analysis.get("issues") or []
+    counts = Counter(i.severity.value for i in issues)
+    return {
+        "reasoning": analysis.get("reasoning", ""),
+        "missing": list(analysis.get("missing") or []),
+        "issue_count": len(issues),
+        "severity_counts": {
+            "CRITICAL": counts.get("CRITICAL", 0),
+            "WARNING": counts.get("WARNING", 0),
+            "PASS": counts.get("PASS", 0),
+        },
+    }
+
+
+def _synthesizer_detail(partial: Dict[str, Any]) -> Dict[str, Any]:
+    report: Optional[Report] = partial.get("report")
+    return {"overall_score": report.overall_score} if report is not None else {}
+
+
+def _detail_for(
+    node: str, partial: Dict[str, Any], retrieved_count: int
+) -> Dict[str, Any]:
+    """Build a node's progress detail. Never raises: the trace is reporting on the
+    review, and a malformed detail must not take the review down with it."""
+    try:
+        if node == "query_planner":
+            return _planner_detail(partial)
+        if node == "retriever":
+            return _retriever_detail(partial)
+        if node == "relevance_grader":
+            return _grader_detail(partial, retrieved_count)
+        if node == "analyzer":
+            return _analyzer_detail(partial)
+        if node == "synthesizer":
+            return _synthesizer_detail(partial)
+    except Exception:  # pragma: no cover - detail is decoration over real work
+        return {}
+    return {}
 
 
 def _initial_state(
@@ -149,22 +237,40 @@ def stream(
     file_name: str = "",
     mode: str = "custom",
 ) -> Iterator[Dict[str, Any]]:
-    """Yield progress events as each node completes, then the final report.
+    """Yield the pipeline shape, then progress per node, then the final report.
 
-    Each event is a dict: {"type": "progress", "node": ..., "label": ...} or
-    {"type": "report", "report": <Report dict>}.
+    Events:
+        {"type": "pipeline", "nodes": [{"node": ..., "label": ...}, ...]}
+        {"type": "progress", "node": ..., "label": ..., "detail": {...}}
+        {"type": "report", "report": <Report dict>}
+
+    A progress event means the named node has *completed* — `stream_mode="updates"`
+    emits after a node runs. The pipeline event lets the client work out which node
+    is running now (the next one) rather than mislabelling a finished node as live.
     """
+    yield {"type": "pipeline", "nodes": [dict(step) for step in _PIPELINE]}
+
     report: Optional[Report] = None
+    retrieved_count = 0
+
     for update in _GRAPH.stream(
         _initial_state(question, doc_id, file_name, mode), stream_mode="updates"
     ):
         for node, partial in update.items():
+            if not isinstance(partial, dict):
+                partial = {}
+            if node == "retriever":
+                # The grader only reports what it kept; the pre-filter count has to
+                # be carried over from the retriever to show the narrowing.
+                retrieved_count = len(partial.get("retrieved") or [])
+
             yield {
                 "type": "progress",
                 "node": node,
                 "label": _NODE_LABELS.get(node, node),
+                "detail": _detail_for(node, partial, retrieved_count),
             }
-            if isinstance(partial, dict) and "report" in partial:
+            if "report" in partial:
                 report = partial["report"]
 
     if report is not None:
