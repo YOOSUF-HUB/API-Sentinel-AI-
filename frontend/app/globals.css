@@ -12,7 +12,20 @@ body {
 }
 
 body {
-  @apply bg-ink-900 text-slate-200 antialiased;
+  @apply bg-ink-900 text-body antialiased;
+}
+
+/* Reduced motion is a floor, not a per-component opt-in: anything animated in
+   this app collapses to its end state rather than being suppressed. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Thin, dark scrollbars to match the dashboard. */

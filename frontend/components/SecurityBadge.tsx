@@ -4,7 +4,7 @@ const STYLES: Record<Severity, { label: string; className: string; icon: string 
   CRITICAL: {
     label: "Critical",
     icon: "✕",
-    className: "bg-severity-critical/15 text-severity-critical ring-severity-critical/30",
+    className: "bg-severity-critical/15 text-severity-critical-bright ring-severity-critical/30",
   },
   WARNING: {
     label: "Warning",
