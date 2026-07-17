@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-17T00:00:00.000Z",
+  "title": "Design System: API Sentinel AI",
+  "extensions": {
+    "colorMeta": {
+      "signal-cyan": {
+        "role": "primary",
+        "displayName": "Signal Cyan",
+        "canonical": "#38bdf8",
+        "tonalRamp": ["#062c3f", "#0a4560", "#0e5f83", "#1279a7", "#1993c9", "#38bdf8", "#7ad3fb", "#c2ebfd"]
+      },
+      "signal-cyan-deep": {
+        "role": "primary",
+        "displayName": "Signal Cyan Deep",
+        "canonical": "#0ea5e9",
+        "tonalRamp": ["#04283a", "#063e58", "#085477", "#0a6b96", "#0c86ba", "#0ea5e9", "#5cc4f3", "#b0e3fa"]
+      },
+      "ink-void": {
+        "role": "neutral",
+        "displayName": "Void",
+        "canonical": "#0a0c10",
+        "tonalRamp": ["#0a0c10", "#0f1218", "#161b24", "#1e2530", "#2a3340", "#475569", "#94a3b8", "#e2e8f0"]
+      },
+      "ink-surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "#0f1218",
+        "tonalRamp": ["#0a0c10", "#0f1218", "#161b24", "#1e2530", "#2a3340", "#475569", "#94a3b8", "#e2e8f0"]
+      },
+      "ink-raised": {
+        "role": "neutral",
+        "displayName": "Raised",
+        "canonical": "#161b24",
+        "tonalRamp": ["#0a0c10", "#0f1218", "#161b24", "#1e2530", "#2a3340", "#475569", "#94a3b8", "#e2e8f0"]
+      },
+      "ink-line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "#1e2530",
+        "tonalRamp": ["#0a0c10", "#0f1218", "#161b24", "#1e2530", "#2a3340", "#475569", "#94a3b8", "#e2e8f0"]
+      },
+      "ink-edge": {
+        "role": "neutral",
+        "displayName": "Edge",
+        "canonical": "#2a3340",
+        "tonalRamp": ["#0a0c10", "#0f1218", "#161b24", "#1e2530", "#2a3340", "#475569", "#94a3b8", "#e2e8f0"]
+      },
+      "text-bright": {
+        "role": "neutral",
+        "displayName": "Bright",
+        "canonical": "#f1f5f9",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0", "#f1f5f9"]
+      },
+      "text-body": {
+        "role": "neutral",
+        "displayName": "Body",
+        "canonical": "#e2e8f0",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0", "#f1f5f9"]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Secondary",
+        "canonical": "#94a3b8",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0", "#f1f5f9"]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "#64748b",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0", "#f1f5f9"]
+      },
+      "severity-critical": {
+        "role": "tertiary",
+        "displayName": "Critical",
+        "canonical": "#ef4444",
+        "tonalRamp": ["#3f0d0d", "#601414", "#831c1c", "#a72424", "#c93030", "#ef4444", "#f58787", "#fbc9c9"]
+      },
+      "severity-warning": {
+        "role": "tertiary",
+        "displayName": "Warning",
+        "canonical": "#f59e0b",
+        "tonalRamp": ["#402a03", "#603f05", "#835507", "#a76c09", "#c9830a", "#f59e0b", "#f8bf5e", "#fce0b1"]
+      },
+      "severity-pass": {
+        "role": "tertiary",
+        "displayName": "Pass",
+        "canonical": "#22c55e",
+        "tonalRamp": ["#093419", "#0d4f26", "#126c34", "#178a43", "#1ba852", "#22c55e", "#68da93", "#b5edc8"]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Page titles. One per screen." },
+      "title": { "displayName": "Title", "purpose": "Wordmark and report heading." },
+      "body": { "displayName": "Body", "purpose": "Everything the user reads. Cap prose at 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Uppercase section markers and stat captions. Never an eyebrow." },
+      "mono": { "displayName": "Mono", "purpose": "Verbatim strings from the user's spec. Never a stylistic choice." }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "transition-default",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1) 150ms",
+        "purpose": "Tailwind's default. Carries every hover and state change in the build."
+      },
+      {
+        "name": "pulse-running",
+        "value": "cubic-bezier(0.4, 0, 0.6, 1) 2s infinite",
+        "purpose": "The Signal Cyan dot beside an in-flight agent run. The only looping animation; currently has no reduced-motion alternative."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "container-max", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single loud thing on a view. One per screen, always the obvious next action.",
+      "html": "<button class=\"ds-btn-primary\">Start review →</button>",
+      "css": ".ds-btn-primary { background: #38bdf8; color: #0a0c10; font: 600 0.875rem/1.25rem ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; padding: 10px 20px; border: none; border-radius: 12px; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #0ea5e9; } .ds-btn-primary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Mode Preset",
+      "kind": "chip",
+      "refersTo": "mode-preset",
+      "description": "A one-click review focus. Selected state is a cyan border plus a 10% cyan wash.",
+      "html": "<button class=\"ds-mode-preset\"><span class=\"ds-mode-preset__label\">Security</span></button><button class=\"ds-mode-preset ds-mode-preset--active\"><span class=\"ds-mode-preset__label\">Documentation</span></button>",
+      "css": ".ds-mode-preset { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; background: #0f1218; border: 1px solid #1e2530; border-radius: 12px; padding: 12px 14px; text-align: left; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-mode-preset__label { color: #f1f5f9; font: 500 0.875rem/1.25rem ui-sans-serif, system-ui, -apple-system, sans-serif; } .ds-mode-preset:hover { background: #161b24; border-color: #2a3340; } .ds-mode-preset:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; } .ds-mode-preset--active { background: rgba(56, 189, 248, 0.1); border-color: #38bdf8; }"
+    },
+    {
+      "name": "Question Input",
+      "kind": "input",
+      "refersTo": "input-textarea",
+      "description": "Free-form review question. Its focus treatment is the best state in the system.",
+      "html": "<textarea class=\"ds-input-question\" rows=\"2\" placeholder=\"e.g. Are the pagination parameters documented consistently?\"></textarea>",
+      "css": ".ds-input-question { width: 100%; resize: none; background: #0f1218; color: #e2e8f0; border: 1px solid #1e2530; border-radius: 12px; padding: 10px 14px; font: 400 0.875rem/1.25rem ui-sans-serif, system-ui, -apple-system, sans-serif; } .ds-input-question::placeholder { color: #94a3b8; } .ds-input-question:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 0 1px #38bdf8; } .ds-input-question:disabled { opacity: 0.6; }"
+    },
+    {
+      "name": "Severity Badge",
+      "kind": "chip",
+      "refersTo": "badge-critical",
+      "description": "States an issue's severity. Glyph plus label, so it survives grayscale and color-blindness.",
+      "html": "<span class=\"ds-badge ds-badge--critical\"><span aria-hidden=\"true\">✕</span>Critical</span><span class=\"ds-badge ds-badge--warning\"><span aria-hidden=\"true\">!</span>Warning</span><span class=\"ds-badge ds-badge--pass\"><span aria-hidden=\"true\">✓</span>Pass</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px; padding: 2px 10px; font: 600 0.75rem/1.333 ui-sans-serif, system-ui, -apple-system, sans-serif; text-transform: uppercase; letter-spacing: 0.025em; margin-right: 8px; } .ds-badge--critical { background: rgba(239, 68, 68, 0.15); color: #ef4444; box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.3); } .ds-badge--warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.3); } .ds-badge--pass { background: rgba(34, 197, 94, 0.15); color: #22c55e; box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.3); }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "The default container. Flat, hairline-bordered, welded to the page plane.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card__title\">Review report</h3><p class=\"ds-card__body\">Depth comes from a tonal step, never a shadow.</p></div>",
+      "css": ".ds-card { background: #0f1218; border: 1px solid #1e2530; border-radius: 16px; padding: 24px; } .ds-card__title { color: #f1f5f9; font: 600 1.125rem/1.556 ui-sans-serif, system-ui, -apple-system, sans-serif; letter-spacing: -0.025em; margin: 0 0 6px; } .ds-card__body { color: #94a3b8; font: 400 0.875rem/1.43 ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; }"
+    },
+    {
+      "name": "Dropzone",
+      "kind": "custom",
+      "refersTo": "dropzone",
+      "description": "The entry point to the whole product. Dashed Edge border is the system's only dashed stroke.",
+      "html": "<div class=\"ds-dropzone\" role=\"button\" tabindex=\"0\"><div class=\"ds-dropzone__title\">Drag &amp; drop your API spec here</div><div class=\"ds-dropzone__hint\">or <span class=\"ds-dropzone__link\">browse</span> to choose a file</div></div>",
+      "css": ".ds-dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: #0f1218; border: 2px dashed #2a3340; border-radius: 16px; padding: 56px 24px; text-align: center; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-dropzone__title { color: #f1f5f9; font: 500 1rem/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif; } .ds-dropzone__hint { color: #94a3b8; font: 400 0.875rem/1.43 ui-sans-serif, system-ui, -apple-system, sans-serif; } .ds-dropzone__link { color: #38bdf8; } .ds-dropzone:hover { background: #161b24; border-color: #38bdf8; } .ds-dropzone:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Agent Trace",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The signature component and the evidence for 'shows its work'. Named nodes append live as the stream arrives. Shown here at its current fidelity, which PRODUCT.md flags as the largest strategy-to-build gap.",
+      "html": "<div class=\"ds-trace\"><div class=\"ds-trace__head\"><span class=\"ds-trace__pulse\"></span>Running agent…</div><ol class=\"ds-trace__list\"><li class=\"ds-trace__step\"><span class=\"ds-trace__glyph ds-trace__glyph--done\">✓</span>Planning sub-questions</li><li class=\"ds-trace__step\"><span class=\"ds-trace__glyph ds-trace__glyph--done\">✓</span>Retrieving relevant sections</li><li class=\"ds-trace__step\"><span class=\"ds-trace__glyph ds-trace__glyph--live\">◌</span>Grading chunk relevance</li></ol></div>",
+      "css": ".ds-trace { background: #0f1218; border: 1px solid #1e2530; border-radius: 12px; padding: 20px; } .ds-trace__head { display: flex; align-items: center; gap: 8px; color: #e2e8f0; font: 500 0.875rem/1.25rem ui-sans-serif, system-ui, -apple-system, sans-serif; margin-bottom: 10px; } .ds-trace__pulse { width: 8px; height: 8px; border-radius: 9999px; background: #38bdf8; animation: ds-trace-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; } .ds-trace__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; } .ds-trace__step { display: flex; align-items: center; gap: 10px; color: #94a3b8; font: 400 0.875rem/1.43 ui-sans-serif, system-ui, -apple-system, sans-serif; } .ds-trace__glyph { font-size: 0.75rem; } .ds-trace__glyph--done { color: #22c55e; } .ds-trace__glyph--live { color: #38bdf8; } @keyframes ds-trace-pulse { 50% { opacity: 0.4; } } @media (prefers-reduced-motion: reduce) { .ds-trace__pulse { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Panel",
+    "overview": "This is a calibrated instrument, not a dashboard. An instrument earns trust by reporting exactly what it measures — never louder, never with flourish, never with a number inflated for effect. The visitor is here to judge the quality of the agent's reasoning, and the interface's only job is to make that reasoning legible. Confidence comes from legibility, not decoration. Every surface should feel like it was built by someone who expected to be inspected closely, because that is precisely the audience.\n\nThe system is near-black and tonal. Depth is built from a five-step ink ramp (#0a0c10 → #2a3340) and hairline borders rather than shadow, and the single cyan accent is rationed hard. Type is a plain system sans at a tight scale — there is no display face and no font pairing, because a review tool has nothing to say that a well-set 14px sans can't say better. Density is moderate: roomy enough that a first-time visitor isn't repelled, tight enough that it reads as a tool rather than a brochure.\n\nWhat this system rejects, in its own words: the generic SaaS dashboard — gradient hero metrics, identical icon-heading-text card grids, glassmorphism, big-number theater. And security-vendor threat theater — blood-red alerting, THREAT LEVEL gauges, fear as an aesthetic. Both are live risks here rather than abstractions: this product renders a 0–100 score and a red-amber-green severity triad, which is exactly the raw material each cliché is made from. The discipline is to report severity at the weight it is actually severe.",
+    "keyCharacteristics": [
+      "Near-black, tonally layered; no shadows in the current build",
+      "One accent, rationed to state and action only",
+      "System sans, single family, tight scale (1.125–1.33 between steps)",
+      "Severity communicated by ranking and clarity, never by alarm",
+      "Generous radii (8–16px) and roomy padding — approachable, not clinical",
+      "Built to survive a close look: real focus states, real contrast, real keyboard paths"
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "Signal Cyan appears on no more than ~10% of any screen, and only to mean live, focused, selected, or primary action. Its rarity is the entire point — the moment it becomes a decorative fill, the running-node pulse stops meaning anything.",
+        "section": "colors"
+      },
+      {
+        "name": "The Earned Alarm Rule",
+        "body": "Severity color is issued by the scorer, never by the designer. Critical red appears on a badge and a bar and nowhere else; it may never wash a card, tint a background at full saturation, or set the page mood. If the interface looks alarming before you've read a single issue title, it is lying about the severity.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ramp-Not-Shadow Rule",
+        "body": "Depth in the current build is a step along the ink ramp, optionally with a Line hairline. A nested surface goes up one step (Surface → Raised); it does not gain a shadow.",
+        "section": "colors"
+      },
+      {
+        "name": "The Glass Pane Rule",
+        "body": "Type never performs. No display face, no font pairing, no gradient text, no clamp-scaled headings. If a heading needs more presence, it gets weight or a size step — never a personality.",
+        "section": "typography"
+      },
+      {
+        "name": "The Literal Mono Rule",
+        "body": "Monospace means the characters came verbatim out of the user's spec. It is forbidden as a stylistic choice for labels, numbers, or 'technical feel.'",
+        "section": "typography"
+      },
+      {
+        "name": "The Quiet Label Rule",
+        "body": "The uppercase 12px label is a section marker, and the system is already close to over-using it. It earns its place where it captions a value or names a block a reader might skip to. It is not an eyebrow: never stack one above every heading as scaffolding.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Loud Thing Rule",
+        "body": "Exactly one Signal Cyan primary button per view. If two elements are competing to be the obvious next action, the screen is wrong, not the button.",
+        "section": "components"
+      },
+      {
+        "name": "The Honest Disabled Rule",
+        "body": "A disabled control must read as unavailable at a glance, not as an enabled control behind fog.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do ration Signal Cyan (#38bdf8) to live state, focus, selection, and the single primary action — the One Voice Rule, ≤10% of any screen.",
+      "Do build depth by stepping the ink ramp (Void #0a0c10 → Surface #0f1218 → Raised #161b24) with 1px Line (#1e2530) borders, matching the current build.",
+      "Do give the agent trace the design attention normally reserved for the report. It is the evidence for shows its work.",
+      "Do copy the textarea's focus treatment (border → Signal Cyan plus a 1px cyan ring) onto every interactive element. It's the system's best state and it's currently used once.",
+      "Do pair every severity color with its glyph and label (✕ Critical, ! Warning, ✓ Pass), so severity survives color-blindness and grayscale.",
+      "Do hold body text to 4.5:1 against the surface it actually renders on, per PRODUCT.md's WCAG 2.2 AA commitment.",
+      "Do keep transitions at 150–250ms and give every animation — including the running pulse — a prefers-reduced-motion: reduce alternative. None currently exists."
+    ],
+    "donts": [
+      "Don't set body-size text in Muted (#64748b) on Surface (#0f1218). Measured: 3.94:1 — fails AA. It currently carries issue locations and stat captions. Darken the surface or lighten the text toward Secondary (#94a3b8, 7.31:1).",
+      "Don't ship the placeholder at #475569 on Surface. Measured: 2.48:1 — fails badly. Placeholders need the same 4.5:1 as body text.",
+      "Don't build a generic SaaS dashboard: no gradient hero metric, no identical icon-heading-text card grids, no glassmorphism, no big-number theater. Audit test: the 80px score ring is one gradient and one supporting-stat row away from being the exact cliché PRODUCT.md rejects. If the number is the most designed thing on the page, the reasoning that produced it has been demoted.",
+      "Don't drift into security-vendor threat theater: no blood-red alerting, no THREAT LEVEL gauges, no fear as an aesthetic. Audit test: if a low score makes the page feel dangerous rather than report that it's low, back the color out.",
+      "Don't nest a card inside a card. The report container currently holds a bordered summary block and bordered issue rows — both are nested cards, and nested cards are always wrong. Use a tonal step to Raised, or a hairline divider, or nothing.",
+      "Don't use background-clip: text with a gradient. Ever. Weight and size carry emphasis.",
+      "Don't use a border-left/border-right over 1px as a colored severity stripe on issue rows. It's the obvious next move for severity and it's banned — the badge already does that job.",
+      "Don't introduce a second font family or a display face. The Glass Pane Rule: type never performs.",
+      "Don't let the uppercase 12px label become an eyebrow above every section. It captions values and names skippable blocks; it is not scaffolding.",
+      "Don't reach for a modal. There are two routes and one flow; anything that wants a modal wants to be inline."
+    ]
+  }
+}

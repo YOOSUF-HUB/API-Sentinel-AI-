@@ -2,9 +2,10 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import AgentTrace, { type TraceEvent } from "@/components/AgentTrace";
 import ReportCard from "@/components/ReportCard";
 import { ApiError, streamReview } from "@/lib/api";
-import type { ProgressEvent, Report, ReviewMode } from "@/lib/types";
+import type { PipelineStep, Report, ReviewMode } from "@/lib/types";
 
 // Preset review modes surfaced as one-click buttons. `custom` is driven by the
 // free-form question box instead of a preset.
@@ -56,9 +57,12 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [question, setQuestion] = useState("");
   const [activeMode, setActiveMode] = useState<ReviewMode | null>(null);
-  const [progress, setProgress] = useState<ProgressEvent[]>([]);
+  const [pipeline, setPipeline] = useState<PipelineStep[]>([]);
+  const [trace, setTrace] = useState<TraceEvent[]>([]);
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Bumped per run so the trace's expand/collapse state doesn't leak across runs.
+  const [runId, setRunId] = useState(0);
 
   // Guard against overlapping runs (double-click / Enter while streaming).
   const runningRef = useRef(false);
@@ -75,15 +79,32 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
       runningRef.current = true;
       setPhase("running");
       setActiveMode(mode);
-      setProgress([]);
+      setPipeline([]);
+      setTrace([]);
       setReport(null);
       setError(null);
+      setRunId((n) => n + 1);
+
+      // Step durations are measured here rather than server-side: they're what the
+      // user actually waited, network included.
+      const startedAt = performance.now();
 
       let settled = false; // saw a terminal report/error event
       try {
         for await (const event of streamReview(docId, trimmed, mode)) {
-          if (event.type === "progress") {
-            setProgress((prev) => [...prev, event]);
+          if (event.type === "pipeline") {
+            setPipeline(event.nodes);
+          } else if (event.type === "progress") {
+            const at = performance.now() - startedAt;
+            setTrace((prev) => [
+              ...prev,
+              {
+                node: event.node,
+                label: event.label,
+                detail: event.detail,
+                at,
+              },
+            ]);
           } else if (event.type === "report") {
             setReport(event.report);
             setPhase("done");
@@ -180,7 +201,7 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
             }}
             rows={2}
             placeholder="e.g. Are the pagination parameters documented consistently?"
-            className="w-full resize-none rounded-xl border border-ink-600 bg-ink-800 px-3.5 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+            className="w-full resize-none rounded-xl border border-ink-600 bg-ink-800 px-3.5 py-2.5 text-sm text-slate-200 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
           />
         </div>
         <button
@@ -198,36 +219,15 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
         </div>
       )}
 
-      {/* Live progress */}
-      {(busy || (phase !== "idle" && progress.length > 0 && !report)) && (
-        <div className="space-y-2.5 rounded-xl border border-ink-600 bg-ink-800 p-5">
-          <div className="flex items-center gap-2 text-sm font-medium text-slate-200">
-            {busy && (
-              <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-            )}
-            {busy ? "Running agent…" : "Agent trace"}
-          </div>
-          <ol className="space-y-1.5">
-            {progress.map((p, i) => {
-              const last = i === progress.length - 1;
-              return (
-                <li
-                  key={`${p.node}-${i}`}
-                  className="flex items-center gap-2.5 text-sm text-slate-400"
-                >
-                  <span
-                    className={`text-xs ${
-                      busy && last ? "text-accent" : "text-severity-pass"
-                    }`}
-                  >
-                    {busy && last ? "◌" : "✓"}
-                  </span>
-                  {p.label}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
+      {/* The agent's reasoning. Survives the report rather than being replaced by
+          it: it's the evidence for the score sitting underneath. */}
+      {phase !== "idle" && (
+        <AgentTrace
+          key={runId}
+          pipeline={pipeline}
+          events={trace}
+          status={phase === "running" ? "running" : phase === "error" ? "error" : "done"}
+        />
       )}
 
       {/* Final report */}
