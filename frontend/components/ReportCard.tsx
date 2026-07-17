@@ -37,7 +37,7 @@ export default function ReportCard({ report }: { report: Report }) {
   );
 
   return (
-    <div className="space-y-6 rounded-2xl border border-ink-600 bg-ink-800 p-6">
+    <div className="space-y-6 rounded-2xl border border-ink-600 bg-ink-800 p-6 motion-safe:animate-rise-in">
       {/* Header: overall score */}
       <div className="flex items-center gap-5">
         <div
@@ -46,30 +46,34 @@ export default function ReportCard({ report }: { report: Report }) {
           )}`}
         >
           <span className="text-2xl font-bold leading-none">{clamped}</span>
-          <span className="text-[10px] uppercase tracking-wide text-slate-500">
+          <span className="text-[10px] uppercase tracking-wide text-muted">
             / 100
           </span>
         </div>
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-slate-100">Review report</h2>
-          <p className="truncate text-sm text-slate-400">{report.file_name}</p>
+          <h2 className="text-lg font-semibold text-bright">Review report</h2>
+          <p className="truncate text-sm text-secondary">{report.file_name}</p>
         </div>
       </div>
 
       {/* Category scores */}
       <div className="grid gap-3 sm:grid-cols-2">
-        {(Object.keys(CATEGORY_LABELS) as (keyof CategoryScores)[]).map((key) => {
+        {(Object.keys(CATEGORY_LABELS) as (keyof CategoryScores)[]).map((key, i) => {
           const value = Math.max(0, Math.min(100, Math.round(report.category_scores[key])));
           return (
             <div key={key} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300">{CATEGORY_LABELS[key]}</span>
+                <span className="text-body">{CATEGORY_LABELS[key]}</span>
                 <span className={`font-semibold ${scoreColor(value)}`}>{value}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-ink-600">
+                {/* Width is the truth and it's set unconditionally; the animation
+                    only clips it back and releases it. A bar that never animates
+                    is a correct bar. The score above deliberately doesn't move —
+                    length is the reasoning, the number is just the number. */}
                 <div
-                  className={`h-full rounded-full transition-all ${barColor(value)}`}
-                  style={{ width: `${value}%` }}
+                  className={`h-full rounded-full motion-safe:animate-bar-grow ${barColor(value)}`}
+                  style={{ width: `${value}%`, animationDelay: `${i * 60}ms` }}
                 />
               </div>
             </div>
@@ -80,10 +84,10 @@ export default function ReportCard({ report }: { report: Report }) {
       {/* Summary */}
       {report.summary && (
         <div className="rounded-xl border border-ink-600 bg-ink-700/50 p-4">
-          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
             Summary
           </h3>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-300">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-body">
             {report.summary}
           </p>
         </div>
@@ -91,11 +95,11 @@ export default function ReportCard({ report }: { report: Report }) {
 
       {/* Issues */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
           Issues ({issues.length})
         </h3>
         {issues.length === 0 ? (
-          <p className="rounded-lg bg-ink-700/50 px-4 py-3 text-sm text-slate-400">
+          <p className="rounded-lg bg-ink-700/50 px-4 py-3 text-sm text-secondary">
             No issues surfaced for this review.
           </p>
         ) : (
@@ -106,16 +110,16 @@ export default function ReportCard({ report }: { report: Report }) {
                 className="rounded-xl border border-ink-600 bg-ink-700/40 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h4 className="text-sm font-semibold text-slate-100">
+                  <h4 className="text-sm font-semibold text-bright">
                     {issue.title}
                   </h4>
                   <SecurityBadge severity={issue.severity} />
                 </div>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+                <p className="mt-1.5 text-sm leading-relaxed text-secondary">
                   {issue.detail}
                 </p>
                 {issue.location && (
-                  <p className="mt-2 font-mono text-xs text-slate-500">
+                  <p className="mt-2 font-mono text-xs text-muted">
                     {issue.location}
                   </p>
                 )}

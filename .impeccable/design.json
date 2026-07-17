@@ -67,14 +67,20 @@
       "text-muted": {
         "role": "neutral",
         "displayName": "Muted",
-        "canonical": "#64748b",
-        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0", "#f1f5f9"]
+        "canonical": "#7c8ba1",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#7c8ba1", "#94a3b8", "#e2e8f0"]
       },
       "severity-critical": {
         "role": "tertiary",
         "displayName": "Critical",
         "canonical": "#ef4444",
         "tonalRamp": ["#3f0d0d", "#601414", "#831c1c", "#a72424", "#c93030", "#ef4444", "#f58787", "#fbc9c9"]
+      },
+      "severity-critical-bright": {
+        "role": "tertiary",
+        "displayName": "Critical Bright",
+        "canonical": "#f87171",
+        "tonalRamp": ["#3f0d0d", "#601414", "#831c1c", "#a72424", "#c93030", "#ef4444", "#f87171", "#fbc9c9"]
       },
       "severity-warning": {
         "role": "tertiary",
@@ -99,14 +105,44 @@
     "shadows": [],
     "motion": [
       {
-        "name": "transition-default",
-        "value": "cubic-bezier(0.4, 0, 0.2, 1) 150ms",
-        "purpose": "Tailwind's default. Carries every hover and state change in the build."
+        "name": "ease-out-quart",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "The one curve for anything that arrives or travels. Every transition and entrance in the build uses it, at 150ms (hover/colour), 200ms (chevron, step label) or 240ms (entrances)."
       },
       {
-        "name": "pulse-running",
-        "value": "cubic-bezier(0.4, 0, 0.6, 1) 2s infinite",
-        "purpose": "The Signal Cyan dot beside an in-flight agent run. The only looping animation; currently has no reduced-motion alternative."
+        "name": "rise-in",
+        "value": "opacity 0->1, translateY 4px->0, 240ms ease-out-quart, fill both",
+        "purpose": "The single entrance. Trace payloads (staggered 50ms), the trace panel, the report card, error banners, the ingest panel. Always motion-safe:, always animating up from the visible end state so a headless or reduced-motion render still shows the content."
+      },
+      {
+        "name": "pulse-status",
+        "value": "opacity 1->0.4->1, 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "purpose": "The live status dot: trace header during a run, ingest panel during upload. Reduced motion is handled by motion-safe: plus the global floor in globals.css."
+      },
+      {
+        "name": "signal-breathe",
+        "value": "stroke-opacity 0.35->0.9->0.35, 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "purpose": "The running node's ring in the agent trace. Same tempo as pulse-status but breathes the ring only, so the solid cyan core never fades — the node under watch must stay legible."
+      },
+      {
+        "name": "draw-check",
+        "value": "stroke-dashoffset 1->0, 280ms ease-out-quart, fill both, pathLength=1",
+        "purpose": "Beat one of a node finishing: its check strokes itself in. Static attributes draw it complete; only the animation hides it first."
+      },
+      {
+        "name": "draw-line",
+        "value": "scaleY 0->1 from origin-top, 360ms ease-out-quart, 120ms delay, fill both",
+        "purpose": "Beat two of a node finishing: the connector carries the run down to the next node. The 120ms delay is what makes the two beats read as one gesture."
+      },
+      {
+        "name": "bar-grow",
+        "value": "clip-path inset(0 100% 0 0 round 9999px)->inset(0 0 0 0 round 9999px), 440ms ease-out-quart, 60ms stagger, fill both",
+        "purpose": "The report's category bars growing to their score. clip-path rather than scaleX so the pill cap keeps its radius, and so no layout property is animated. The overall score deliberately does not animate."
+      },
+      {
+        "name": "ease-unfold / ease-fold",
+        "value": "cubic-bezier(0.1, 0.85, 0.25, 1) expanding / cubic-bezier(0.25, 0.46, 0.45, 0.94) collapsing, 300ms",
+        "purpose": "The agent trace disclosure, and nothing else. grid-template-rows 0fr<->1fr interpolates linearly in fr but maps to pixels as a square (height = H*f^2), so the named curve is squared before it is seen and the two directions need opposite pre-distortions. Measured on the real panel at 25/50/75%: unfold 66/91/98, fold 30/5/0. Applied only when the user toggles; the auto-collapse at completion is deliberately instant."
       }
     ],
     "breakpoints": [
@@ -232,11 +268,16 @@
       "Do copy the textarea's focus treatment (border → Signal Cyan plus a 1px cyan ring) onto every interactive element. It's the system's best state and it's currently used once.",
       "Do pair every severity color with its glyph and label (✕ Critical, ! Warning, ✓ Pass), so severity survives color-blindness and grayscale.",
       "Do hold body text to 4.5:1 against the surface it actually renders on, per PRODUCT.md's WCAG 2.2 AA commitment.",
-      "Do keep transitions at 150–250ms and give every animation — including the running pulse — a prefers-reduced-motion: reduce alternative. None currently exists."
+      "Do keep transitions at 150–250ms, and name a duration and a curve at every call site. A bare `transition` is Tailwind's 150ms cubic-bezier(0.4, 0, 0.2, 1) wearing the system's clothes.",
+      "Do reach for one of the four gestures (entrance / live signal / draw / fold) before inventing a fifth. They live in tailwind.config.ts as rise-in, pulse-status + signal-breathe, draw-check + draw-line, and ease-unfold + ease-fold.",
+      "Do write animations so the end state is the static one and the animation only hides it first — fill: both plus motion-safe:. Reduced motion, a hidden tab and a headless render then all show finished content instead of nothing. Verify by cancelling every animation (getAnimations().forEach(a => a.cancel())) and checking the page is still complete."
     ],
     "donts": [
-      "Don't set body-size text in Muted (#64748b) on Surface (#0f1218). Measured: 3.94:1 — fails AA. It currently carries issue locations and stat captions. Darken the surface or lighten the text toward Secondary (#94a3b8, 7.31:1).",
-      "Don't ship the placeholder at #475569 on Surface. Measured: 2.48:1 — fails badly. Placeholders need the same 4.5:1 as body text.",
+      "Don't write a raw slate-* or red-* utility. Every text colour is a token (bright / body / secondary / muted, plus the severity trio). Nine AA failures got in precisely because the roles were named in DESIGN.md but never existed in tailwind.config.ts, so each call site picked its own gray.",
+      "Don't darken Muted back past #7c8ba1. It is the floor of the text ramp and sits at 5.21:1 on the lightest surface it lands on; #64748b is one step down and measures 3.94:1.",
+      "Don't check contrast against the nominal surface. Composite the whole ancestor chain first, alpha included. The Critical badge reads as #ef4444 on ink-800 (4.98:1, fine) and is actually #ef4444 on rgb(51,29,35) (4.18:1, failing) because its own 15% tint sits between.",
+      "Don't trust a timing function on grid-template-rows. Interpolating 0fr<->1fr is linear in fr, but fr maps to pixels as a SQUARE (height = H*f^2), so whatever curve you name gets squared before anyone sees it — out-quart lands as (1-t)^8, a snap with a tail. The squaring is symmetric, so one curve cannot serve both directions: measured with linear, expand runs 6/25/56 and collapse 56/25/6. Measure the pixels, not the curve.",
+      "Don't add a backdrop-blur to a surface nothing scrolls under. The header carried one for a static bar: a real compositing layer filtering a flat, uniform backdrop into the identical flat colour. Blur is rare and purposeful, or nothing.",
       "Don't build a generic SaaS dashboard: no gradient hero metric, no identical icon-heading-text card grids, no glassmorphism, no big-number theater. Audit test: the 80px score ring is one gradient and one supporting-stat row away from being the exact cliché PRODUCT.md rejects. If the number is the most designed thing on the page, the reasoning that produced it has been demoted.",
       "Don't drift into security-vendor threat theater: no blood-red alerting, no THREAT LEVEL gauges, no fear as an aesthetic. Audit test: if a low score makes the page feel dangerous rather than report that it's low, back the color out.",
       "Don't nest a card inside a card. The report container currently holds a bordered summary block and bordered issue rows — both are nested cards, and nested cards are always wrong. Use a tonal step to Raised, or a hairline divider, or nothing.",

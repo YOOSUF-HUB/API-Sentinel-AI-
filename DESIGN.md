@@ -10,12 +10,13 @@ colors:
   ink-line: "#1e2530"
   ink-edge: "#2a3340"
   severity-critical: "#ef4444"
+  severity-critical-bright: "#f87171"
   severity-warning: "#f59e0b"
   severity-pass: "#22c55e"
   text-bright: "#f1f5f9"
   text-body: "#e2e8f0"
   text-secondary: "#94a3b8"
-  text-muted: "#64748b"
+  text-muted: "#7c8ba1"
 typography:
   headline:
     fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
@@ -89,7 +90,7 @@ components:
     padding: "24px"
   badge-critical:
     backgroundColor: "#ef444426"
-    textColor: "{colors.severity-critical}"
+    textColor: "{colors.severity-critical-bright}"
     rounded: "{rounded.full}"
     padding: "2px 10px"
   badge-warning:
@@ -149,16 +150,25 @@ None. The severity triad below is semantic, not a secondary brand color, and mus
 - **Raised** (`#161b24`, token `ink-700`): The step above Surface — stat tiles, the summary block, issue rows. Used when something needs to read as nested inside a card without a border doing the work.
 - **Line** (`#1e2530`, token `ink-600`): Hairline borders, dividers, and the unfilled track of a score bar. Structural, never decorative.
 - **Edge** (`#2a3340`, token `ink-500`): The dashed dropzone border and hover border states. The lightest ink step; the only one that reads as an edge rather than a surface.
-- **Bright** (`#f1f5f9`): Headings and emphasized inline values.
-- **Body** (`#e2e8f0`): Default body text, set on `<body>`.
-- **Secondary** (`#94a3b8`): Supporting prose and descriptions. Measures 7.31:1 on Surface — comfortably AA.
-- **Muted** (`#64748b`): Currently carries small labels and issue locations. **This color fails AA at body size** (see Do's and Don'ts).
+The four text roles are real Tailwind tokens (`text-bright`, `text-body`, `text-secondary`, `text-muted`) rather than raw `slate-*`. There is no raw color left in the app; a `slate-*` or `red-*` utility appearing in a diff is drift, and it is how the contrast bug below got in the first time.
+
+- **Bright** (`#f1f5f9`, token `bright`): Headings and emphasized inline values. 16.47:1 worst-case.
+- **Body** (`#e2e8f0`, token `body`): Prose the user actually reads, and the `<body>` default. 14.63:1 worst-case.
+- **Secondary** (`#94a3b8`, token `secondary`): Supporting prose and descriptions. 7.04:1 worst-case.
+- **Muted** (`#7c8ba1`, token `muted`): The quiet tier — section labels, issue locations, step timings, placeholders. 5.21:1 worst-case.
+
+Ratios are measured against `ink-700/50` (`rgb(19,23,30)`), the lightest surface any of them actually composite onto — not against nominal Surface, which flatters every number.
+
+**Muted was `#64748b` and measured 3.94:1 — a real AA failure across nine sites.** It was lightened to `#7c8ba1` rather than collapsed into Secondary, so the four-step hierarchy survives at a value that passes. `#64748b` is now out of the system; don't reintroduce it.
 
 ### Severity
 
-- **Critical** (`#ef4444`): The highest issue rank. 4.98:1 on Surface — passes AA, with little margin.
-- **Warning** (`#f59e0b`): The middle rank. 8.73:1 on Surface.
-- **Pass** (`#22c55e`): A satisfied check. 8.23:1 on Surface.
+Severity is judged on the tint it sits on, not on Surface. Each badge lays its own 15% fill under its text, which lightens the background beneath it — the reason the ratios below are lower than a naive check against `ink-800` suggests.
+
+- **Critical** (`#ef4444`, token `severity-critical`): The highest issue rank. 4.98:1 on Surface — the score ring and category bars use it and pass.
+- **Critical Bright** (`#f87171`, token `severity-critical-bright`): Critical's *text* tone wherever it sits on its own tint. Red is far darker than amber or green at the same nominal step, so `#ef4444` on the badge lands at **4.18:1 and fails**, while Warning and Pass clear 6:1 unaided. This token exists to close that gap: **5.68:1**, back in family with the other two. Also carries the error banner's text.
+- **Warning** (`#f59e0b`): The middle rank. 6.55:1 on its badge tint.
+- **Pass** (`#22c55e`): A satisfied check. 6.23:1 on its badge tint.
 
 ### Named Rules
 
@@ -194,7 +204,7 @@ None. The severity triad below is semantic, not a secondary brand color, and mus
 
 ## 4. Elevation
 
-**The current build has no shadows at all.** Not one `box-shadow` exists across the four components and two routes. Depth is conveyed entirely by tonal layering along the ink ramp (Void → Surface → Raised) plus 1px `Line` borders, with a single `backdrop-blur` on the sticky header.
+**The current build has no shadows at all, and no blurs either.** Not one `box-shadow` exists across the four components and two routes. Depth is conveyed **entirely** by tonal layering along the ink ramp (Void → Surface → Raised) plus 1px `Line` borders — with no exceptions, which is new: this document used to claim "a single `backdrop-blur` on the sticky header." The header is not sticky and never was, so that blur was filtering a flat, uniform backdrop into the identical flat colour. It has been removed rather than documented.
 
 This is documented as **current state, not doctrine.** The flatness was not a deliberate decision, and elevation is explicitly open. If shadows are introduced later, they should be a response to state (hover, focus, overlay) rather than ambient decoration, and the first real need will likely be a dropdown or modal that has to escape the page plane. Until that decision is made deliberately, new surfaces should follow the existing tonal approach rather than inventing a shadow vocabulary ad hoc.
 
@@ -213,7 +223,7 @@ The character across the board is **soft and approachable**: generous radii, roo
 - **Shape:** Generously rounded (12px, `rounded-xl`); the upload page's confirm button uses a slightly tighter 8px (`rounded-lg`) — an inconsistency, not a variant.
 - **Primary:** Signal Cyan fill with Void text (`#38bdf8` on `#0a0c10`), 10px/20px padding, 14px semibold. Inverted-brightness by design: dark text on a bright accent is the loudest element on the screen, which is why there is only ever one per view.
 - **Hover / Focus:** Background steps to Signal Cyan Deep (`#0ea5e9`) over ~150ms. **No `:focus-visible` ring is currently defined** — buttons rely on the browser default.
-- **Disabled:** Opacity 0.4 with `cursor-not-allowed`. The accent stays saturated underneath, which is the one place the system currently breaks the "no full-saturation accent on inactive states" convention.
+- **Disabled:** The accent is **removed**, not faded: background steps to `Raised` (`#161b24`) with `Muted` text and `cursor-not-allowed`. A disabled primary used to be Signal Cyan at opacity 0.4, which read as an enabled button behind fog and left the accent saturated underneath — the Honest Disabled Rule and the One Voice Rule pulling against each other. Unavailable is a surface, not a dimmer.
 
 ### Chips
 
@@ -233,25 +243,49 @@ The character across the board is **soft and approachable**: generous radii, roo
 - **Style:** Surface fill, 1px `Line` stroke, 12px radius, 10px/14px padding, 14px Body text, non-resizable.
 - **Focus:** Border shifts to Signal Cyan with a 1px cyan ring — the clearest focus treatment in the system and the model the buttons should follow.
 - **Disabled:** Opacity 0.6.
-- **Placeholder:** Currently `#475569`. **Fails AA badly** (see Do's and Don'ts).
+- **Placeholder:** `Muted` (`#7c8ba1`, 5.41:1 on Surface) — quieter than a typed value (`Body`) so the two never read alike, but held to the same 4.5:1 as body text. It was `#475569` (2.48:1).
 
 ### Navigation
 
-- **Style:** A single sticky top bar, 1px `Line` bottom border, Surface at 70% opacity with `backdrop-blur`. Contents: wordmark only — there is no nav, because there are only two routes and the second is reached by finishing the first.
+- **Style:** A single **static** top bar — opaque Surface, 1px `Line` bottom border, scrolls away with the page. Contents: wordmark only — there is no nav, because there are only two routes and the second is reached by finishing the first. It doesn't stick: a bar carrying no navigation earns no permanent viewport, least of all on mobile, and the run it would hover over is the thing the user came to watch.
 - **Wordmark:** "API Sentinel **AI**" at Title size, with "AI" in Signal Cyan — the one sanctioned decorative use of the accent in the system.
 - **Mobile:** Identical. Nothing collapses; there's nothing to collapse.
 
 ### The Agent Trace (signature component)
 
-The most important component in the product and currently the least designed. An ordered list of named nodes (query planner → retriever → relevance grader → analyzer → synthesizer), each a 14px Secondary label preceded by a status glyph: `◌` in Signal Cyan while running, `✓` in Pass green once complete. Steps append live as NDJSON events arrive. A 2px Signal Cyan dot pulses beside "Running agent…" while the stream is open.
+The most important component in the product, and the one that has to carry *"the trace is the product, not a loading state."* A `Surface` panel whose header is a disclosure button (`h2` — a sibling of the report's heading, not a child of it), over an ordered list of the graph's five nodes: query planner → retriever → relevance grader → analyzer → synthesizer.
 
-PRODUCT.md is explicit that *"the trace is the product, not a loading state"* — this is the evidence for the entire positioning claim. Its present form is a four-line checklist, which is the single largest gap between the strategy and the build.
+**Disclosure:** open while the run works, collapsed once the report lands, and never removed — the reasoning stays available underneath its own result. User intent wins permanently once expressed.
+
+**Step states,** each an 18px indicator in an `18px 1fr` grid with a 1px `Line` connector running between them:
+
+- **Pending:** `Edge` ring, `Secondary` label.
+- **Running:** Signal Cyan dot, pulsing, `Bright` medium label. The only cyan in the component — this is what the One Voice Rule is protecting.
+- **Done:** a **neutral** check in a `Raised` disc, `Body` label. Deliberately *not* Pass green: a completed node is not a severity, and borrowing the scorer's palette for "this finished" is exactly the Earned Alarm Rule's failure mode.
+- **Failed:** `Critical` ✕ on a 15% tint.
+
+**Payloads.** Each node renders as the artifact it actually produced, never a uniform row: the planner shows the questions it wrote, the retriever its counts and section types, the grader a narrowing (`18 retrieved → 11 kept · 7 dropped below 0.50`) with the kept chunks and their scores, the analyzer its reasoning prose and what it found undocumented, the synthesizer the score. Uniform rows would flatten away the thing the component exists to show. Prose caps at `68ch`; chunk lists cap at `max-w-sm` so a location is never stranded half a viewport from its score. Mono appears only on spec locations (the Literal Mono Rule).
+
+**Ordering constraint:** a progress event means a node *finished*, so the running node is the first one not yet heard from. The pipeline is streamed up front as its own event rather than inferred from arrivals — inferring it is what produced an off-by-one that announced a completed step as still running.
+
+**Motion.** The trace is where the system's motion budget is actually spent, because the run's progress *is* the content. Four gestures, and the whole app draws from the same four:
+
+- **Entrance** (`rise-in`, 240ms `out-quart`, 50ms stagger down a list). Everything the agent produces arrives this way: payloads, the panel, the report, an error. Always `motion-safe:`, always animating *up from the visible end state*, so a headless render or a reduced-motion user still gets the content.
+- **Live signal** (2s `breathe`, symmetric — a loop on an ease-out curve reads lopsided). The running node's ring breathes on its stroke while the cyan core stays solid; the header dot breathes on opacity. Pulsing the whole indicator, as it once did, faded out the one node the user is actually watching.
+- **Draw** — a node finishing, in two beats: its check strokes in over 280ms, then at +120ms the connector fills downward to wake the next node. The connector is the run's progress bar, which is why there isn't a separate one. Its fill is **neutral** (`Secondary`), never cyan: cyan means *live*, and a traversed edge is history. The edges below the frontier stay `Line` dark, so the spine reports exactly how far the run got — including where it failed.
+- **Fold** — the disclosure only. See the Named Rule below.
+
+The score is the one thing that deliberately **doesn't** move. Bars grow; the number is just placed. Animating a 0–100 score is big-number theater, and the motion budget belongs to the reasoning, not the metric.
+
+A live region announces step changes independently of all of it.
 
 ### Named Rules
 
 **The One Loud Thing Rule.** Exactly one Signal Cyan primary button per view. If two elements are competing to be the obvious next action, the screen is wrong, not the button.
 
 **The Honest Disabled Rule.** A disabled control must read as unavailable at a glance, not as an enabled control behind fog.
+
+**The Fold-Only-When-Asked Rule.** The trace's disclosure animates when the *user* toggles it, and never on the auto-collapse when a run completes. That collapse moves ~1000px: sliding a screen and a half of finished reasoning past someone to reveal the answer they just waited for is choreography charging rent on the result. Clicking the header is a question about the panel, and the fold answers it. The run ending is a question about the report — so the panel just closes, and the report's own entrance plays in a settled layout where it can actually be seen. Before this split, the report's fade ran while it was still 1000px below the fold and nobody ever saw it.
 
 ## 6. Do's and Don'ts
 
@@ -263,12 +297,17 @@ PRODUCT.md is explicit that *"the trace is the product, not a loading state"* �
 - **Do** copy the textarea's focus treatment (border → Signal Cyan plus a 1px cyan ring) onto every interactive element. It's the system's best state and it's currently used once.
 - **Do** pair every severity color with its glyph and label (`✕ Critical`, `! Warning`, `✓ Pass`), so severity survives color-blindness and grayscale.
 - **Do** hold body text to 4.5:1 against the surface it actually renders on, per PRODUCT.md's WCAG 2.2 AA commitment.
-- **Do** keep transitions at 150–250ms and give every animation — including the running pulse — a `prefers-reduced-motion: reduce` alternative. None currently exists.
+- **Do** keep transitions at 150–250ms, and name a duration *and* a curve at every call site. A bare `transition` is Tailwind's 150ms `cubic-bezier(0.4, 0, 0.2, 1)` wearing the system's clothes.
+- **Do** reach for one of the four gestures (entrance / live signal / draw / fold) before inventing a fifth. They're in `tailwind.config.ts` as `rise-in`, `pulse-status` + `signal-breathe`, `draw-check` + `draw-line`, and `ease-unfold` + `ease-fold`.
+- **Do** write animations so the *end* state is the static one and the animation only hides it first — `fill: both` plus `motion-safe:`. Reduced motion, a hidden tab, and a headless render then all show finished content instead of nothing. Verify by cancelling every animation (`getAnimations().forEach(a => a.cancel())`) and checking the page is still complete.
 
 ### Don't:
 
-- **Don't** set body-size text in Muted (`#64748b`) on Surface (`#0f1218`). Measured: **3.94:1 — fails AA.** It currently carries issue locations and stat captions. Darken the surface or lighten the text toward Secondary (`#94a3b8`, 7.31:1).
-- **Don't** ship the placeholder at `#475569` on Surface. Measured: **2.48:1 — fails badly.** Placeholders need the same 4.5:1 as body text.
+- **Don't** write a raw `slate-*` or `red-*` utility. Every text color is a token (`bright` / `body` / `secondary` / `muted`, plus the severity trio). Nine AA failures got in precisely because the roles were named here but never existed in `tailwind.config.ts`, so each call site picked its own gray.
+- **Don't** darken Muted back past `#7c8ba1`. It is the floor of the text ramp and it sits at 5.21:1 on the lightest surface it lands on; `#64748b` is one step down and measures 3.94:1.
+- **Don't** add a `backdrop-blur` to a surface nothing scrolls under. The header carried one for a static bar — a real compositing layer filtering a flat, uniform backdrop into the identical flat colour. That's glassmorphism arrived at by accident, which is still the thing this system rejects. Blur is rare and purposeful, or nothing.
+- **Don't** trust a timing function on `grid-template-rows`. Interpolating `0fr`↔`1fr` is linear in `fr`, but fr maps to pixels as a **square** (`height = H·f²`), so whatever curve you name gets squared before anyone sees it — `out-quart` lands as `(1-t)⁸`, a snap with a tail. The squaring is symmetric, so one curve cannot serve both directions: measured with `linear`, expand runs 6/25/56 and collapse 56/25/6. That's why `ease-unfold` and `ease-fold` are separate, pre-distorted, and used nowhere else. Measure the pixels, not the curve.
+- **Don't** check contrast against the nominal surface. Composite the whole ancestor chain first, alpha included. The Critical badge reads as `#ef4444` on `ink-800` (4.98:1, fine) and is actually `#ef4444` on `rgb(51,29,35)` (4.18:1, failing) because its own 15% tint sits between. Every ratio in this document was measured in a browser for that reason.
 - **Don't** build a **generic SaaS dashboard**: no gradient hero metric, no identical icon-heading-text card grids, no glassmorphism, no **big-number theater**. Audit test: the 80px score ring is one gradient and one supporting-stat row away from being the exact cliché PRODUCT.md rejects. If the number is the most designed thing on the page, the reasoning that produced it has been demoted.
 - **Don't** drift into **security-vendor threat theater**: no blood-red alerting, no THREAT LEVEL gauges, no fear as an aesthetic. Audit test: if a low score makes the page *feel* dangerous rather than *report* that it's low, back the color out.
 - **Don't** nest a card inside a card. The report container currently holds a bordered summary block and bordered issue rows — both are nested cards, and nested cards are always wrong. Use a tonal step to Raised, or a hairline divider, or nothing.
