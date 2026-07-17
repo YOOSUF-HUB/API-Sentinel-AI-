@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import ColdStartNotice from "@/components/ColdStartNotice";
 import FileUpload from "@/components/FileUpload";
 import { ApiError, uploadDocument } from "@/lib/api";
 import type { UploadResponse } from "@/lib/types";
@@ -15,10 +16,14 @@ export default function UploadPage() {
   const [fileName, setFileName] = useState<string>("");
   const [result, setResult] = useState<UploadResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // When the current wait started. Ingest is the one request that always embeds,
+  // so there's no node to blame here — the whole call is the wait.
+  const [startedAt, setStartedAt] = useState<number | null>(null);
 
   async function handleSelect(file: File) {
     setFileName(file.name);
     setStatus("uploading");
+    setStartedAt(performance.now());
     setError(null);
     setResult(null);
 
@@ -62,6 +67,8 @@ export default function UploadPage() {
           — parsing, chunking, and embedding…
         </div>
       )}
+
+      {status === "uploading" && <ColdStartNotice since={startedAt} />}
 
       {status === "error" && error && (
         <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 px-4 py-3 text-sm text-severity-critical-bright motion-safe:animate-rise-in">

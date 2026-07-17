@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import AgentTrace, { type TraceEvent } from "@/components/AgentTrace";
+import ColdStartNotice from "@/components/ColdStartNotice";
 import ReportCard from "@/components/ReportCard";
 import { ApiError, streamReview } from "@/lib/api";
 import type { PipelineStep, Report, ReviewMode } from "@/lib/types";
@@ -63,6 +64,9 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
   const [error, setError] = useState<string | null>(null);
   // Bumped per run so the trace's expand/collapse state doesn't leak across runs.
   const [runId, setRunId] = useState(0);
+  // Wall-clock origin for the run, kept in state because the cold-start notice
+  // needs it across renders. `trace[].at` stays relative to it.
+  const [runStartedAt, setRunStartedAt] = useState<number | null>(null);
 
   // Guard against overlapping runs (double-click / Enter while streaming).
   const runningRef = useRef(false);
@@ -88,6 +92,7 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
       // Step durations are measured here rather than server-side: they're what the
       // user actually waited, network included.
       const startedAt = performance.now();
+      setRunStartedAt(startedAt);
 
       let settled = false; // saw a terminal report/error event
       try {
@@ -134,6 +139,19 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
   );
 
   const busy = phase === "running";
+
+  // Only the embedder cold-starts. The model loads lazily on the first embed,
+  // which is the retriever's node — or the instance wake itself, before any node
+  // has landed. A slow analyzer is Groq being slow, and explaining *that* with a
+  // story about embeddings would be inventing a reason. The trace already names
+  // the running node, so every other wait is accounted for.
+  const nextNode = pipeline[trace.length]?.node;
+  const embedderIsWaiting = trace.length === 0 || nextNode === "retriever";
+  // The current wait, not the run's total: restarts at each node that lands.
+  const waitingSince =
+    busy && embedderIsWaiting && runStartedAt !== null
+      ? runStartedAt + (trace.length > 0 ? trace[trace.length - 1].at : 0)
+      : null;
 
   return (
     <div className="space-y-6">
@@ -221,6 +239,12 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
           {error}
         </div>
       )}
+
+      {/* Above the trace, not below it: the panel it's explaining is a screen
+          tall, and a note about a stall that sits under a screen of stalled
+          reasoning is a note nobody reads. Mounted for the whole run so its live
+          region pre-exists the wait it announces. */}
+      {busy && <ColdStartNotice since={waitingSince} />}
 
       {/* The agent's reasoning. Survives the report rather than being replaced by
           it: it's the evidence for the score sitting underneath. */}

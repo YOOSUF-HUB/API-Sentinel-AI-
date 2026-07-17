@@ -279,6 +279,16 @@ The score is the one thing that deliberately **doesn't** move. Bars grow; the nu
 
 A live region announces step changes independently of all of it.
 
+### The Cold-Start Notice
+
+The one wait the trace *can't* explain. The backend embeds in-process on a free instance that sleeps when idle, so the first request after a wake loads a ~90 MB model on a shared CPU — minutes, against seconds warm. Nothing streams that, because it happens underneath a node that hasn't reported yet. Everywhere else, the trace already answers *why is this slow* by naming the running node.
+
+**Neutral by construction.** A `Surface` panel with a `Line` hairline, a `Bright` lead sentence and `Body` prose at a 68ch measure, arriving on `rise-in`. No severity tint — a cold start is infrastructure, not a finding, and amber here would collide with the warnings the same run is about to report about the user's spec. No cyan either: cyan means *live*, and the running node one panel down is already saying that. It is noticed because it arrives and because it is prose in a field of chrome, not because it is colored.
+
+**Staged, because what can honestly be claimed changes with time.** Silent under 10s. At 10s it hedges — a 12s wait is anomalous but is not yet *evidence* of a cold start. At 45s it names the cause and quotes the number, because by then nothing else explains it. Asserting "a few minutes" at ten seconds would make every merely-slow run look broken.
+
+**Scoped to the embedder.** It times the *current* wait — the run's start, or the last node to land — never total elapsed, so a run that is moving never trips it however long it takes overall. And it only speaks where the embedder is the plausible cause: before any node has landed (the instance waking), or while the retriever runs (the model loading). A slow analyzer is Groq being slow.
+
 ### Named Rules
 
 **The One Loud Thing Rule.** Exactly one Signal Cyan primary button per view. If two elements are competing to be the obvious next action, the screen is wrong, not the button.
@@ -299,6 +309,7 @@ A live region announces step changes independently of all of it.
 - **Do** hold body text to 4.5:1 against the surface it actually renders on, per PRODUCT.md's WCAG 2.2 AA commitment.
 - **Do** keep transitions at 150–250ms, and name a duration *and* a curve at every call site. A bare `transition` is Tailwind's 150ms `cubic-bezier(0.4, 0, 0.2, 1)` wearing the system's clothes.
 - **Do** reach for one of the four gestures (entrance / live signal / draw / fold) before inventing a fifth. They're in `tailwind.config.ts` as `rise-in`, `pulse-status` + `signal-breathe`, `draw-check` + `draw-line`, and `ease-unfold` + `ease-fold`.
+- **Do** say only what is known at the moment you say it. The cold-start notice hedges at 10s and names the cause at 45s because that's when each becomes true. A UI that explains a delay with the *wrong* reason is worse than one that says nothing — it spends the trust the trace earns.
 - **Do** write animations so the *end* state is the static one and the animation only hides it first — `fill: both` plus `motion-safe:`. Reduced motion, a hidden tab, and a headless render then all show finished content instead of nothing. Verify by cancelling every animation (`getAnimations().forEach(a => a.cancel())`) and checking the page is still complete.
 
 ### Don't:
@@ -306,6 +317,7 @@ A live region announces step changes independently of all of it.
 - **Don't** write a raw `slate-*` or `red-*` utility. Every text color is a token (`bright` / `body` / `secondary` / `muted`, plus the severity trio). Nine AA failures got in precisely because the roles were named here but never existed in `tailwind.config.ts`, so each call site picked its own gray.
 - **Don't** darken Muted back past `#7c8ba1`. It is the floor of the text ramp and it sits at 5.21:1 on the lightest surface it lands on; `#64748b` is one step down and measures 3.94:1.
 - **Don't** add a `backdrop-blur` to a surface nothing scrolls under. The header carried one for a static bar — a real compositing layer filtering a flat, uniform backdrop into the identical flat colour. That's glassmorphism arrived at by accident, which is still the thing this system rejects. Blur is rare and purposeful, or nothing.
+- **Don't** explain *infrastructure* with severity color. A cold start, a wake, a dropped connection: none of them are findings, and the report renders real amber warnings about the user's spec one panel down. The Earned Alarm Rule guards the scorer's palette from the designer; this is the same rule pointed at the other kind of message — reaching for amber because a notice *feels* urgent is how the triad stops meaning anything.
 - **Don't** trust a timing function on `grid-template-rows`. Interpolating `0fr`↔`1fr` is linear in `fr`, but fr maps to pixels as a **square** (`height = H·f²`), so whatever curve you name gets squared before anyone sees it — `out-quart` lands as `(1-t)⁸`, a snap with a tail. The squaring is symmetric, so one curve cannot serve both directions: measured with `linear`, expand runs 6/25/56 and collapse 56/25/6. That's why `ease-unfold` and `ease-fold` are separate, pre-distorted, and used nowhere else. Measure the pixels, not the curve.
 - **Don't** check contrast against the nominal surface. Composite the whole ancestor chain first, alpha included. The Critical badge reads as `#ef4444` on `ink-800` (4.98:1, fine) and is actually `#ef4444` on `rgb(51,29,35)` (4.18:1, failing) because its own 15% tint sits between. Every ratio in this document was measured in a browser for that reason.
 - **Don't** build a **generic SaaS dashboard**: no gradient hero metric, no identical icon-heading-text card grids, no glassmorphism, no **big-number theater**. Audit test: the 80px score ring is one gradient and one supporting-stat row away from being the exact cliché PRODUCT.md rejects. If the number is the most designed thing on the page, the reasoning that produced it has been demoted.
