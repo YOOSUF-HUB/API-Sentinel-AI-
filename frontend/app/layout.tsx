@@ -17,13 +17,19 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <div className="flex min-h-screen flex-col">
-          <header className="border-b border-ink-600 bg-ink-800/70 backdrop-blur">
+          {/* Opaque Surface, no blur. This header is static — nothing ever
+              scrolls under it — so `bg-ink-800/70 backdrop-blur` was blurring a
+              flat, uniform backdrop into the identical flat colour: a real
+              compositing layer bought for zero pixels of effect, and
+              glassmorphism by accident rather than intent. Depth here is the ink
+              ramp plus a hairline, like every other surface in the system. */}
+          <header className="border-b border-ink-600 bg-ink-800">
             <div className="mx-auto flex max-w-5xl items-center gap-3 px-6 py-4">
               <Link href="/" className="flex items-center gap-2.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-lg">
                   🛡️
                 </span>
-                <span className="text-lg font-semibold tracking-tight text-slate-100">
+                <span className="text-lg font-semibold tracking-tight text-bright">
                   API Sentinel{" "}
                   <span className="text-accent">AI</span>
                 </span>
@@ -35,7 +41,7 @@ export default function RootLayout({
             {children}
           </main>
 
-          <footer className="border-t border-ink-600 px-6 py-5 text-center text-xs text-slate-500">
+          <footer className="border-t border-ink-600 px-6 py-5 text-center text-xs text-muted">
             RAG-powered API documentation reviewer
           </footer>
         </div>

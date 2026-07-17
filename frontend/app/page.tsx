@@ -39,10 +39,10 @@ export default function UploadPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-bright">
           Review your API documentation
         </h1>
-        <p className="max-w-2xl text-sm text-slate-400">
+        <p className="max-w-2xl text-sm text-secondary">
           Upload an API specification and Sentinel will ingest it, then run an AI
           agent review that surfaces security, documentation, and best-practice
           issues as a scored report.
@@ -52,21 +52,25 @@ export default function UploadPage() {
       <FileUpload onSelect={handleSelect} disabled={status === "uploading"} />
 
       {status === "uploading" && (
-        <div className="flex items-center gap-3 rounded-xl border border-ink-600 bg-ink-800 px-4 py-3 text-sm text-slate-300">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-          Ingesting <span className="font-medium text-slate-100">{fileName}</span>{" "}
+        <div className="flex items-center gap-3 rounded-xl border border-ink-600 bg-ink-800 px-4 py-3 text-sm text-body motion-safe:animate-rise-in">
+          {/* Same status dot as the trace header's. This was Tailwind's stock
+              pulse utility — a third tempo for the same idea. Don't name that
+              class here even in prose: the content scanner is a regex over raw
+              file text, so mentioning it emits the rule right back into the CSS. */}
+          <span className="h-2 w-2 shrink-0 rounded-full bg-accent motion-safe:animate-pulse-status" />
+          Ingesting <span className="font-medium text-bright">{fileName}</span>{" "}
           — parsing, chunking, and embedding…
         </div>
       )}
 
       {status === "error" && error && (
-        <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 px-4 py-3 text-sm text-severity-critical-bright motion-safe:animate-rise-in">
           {error}
         </div>
       )}
 
       {status === "done" && result && (
-        <div className="space-y-4 rounded-xl border border-ink-600 bg-ink-800 p-5">
+        <div className="space-y-4 rounded-xl border border-ink-600 bg-ink-800 p-5 motion-safe:animate-rise-in">
           <div className="flex items-center gap-2 text-sm font-medium text-severity-pass">
             <span>✓</span> Ingested {result.file_name}
           </div>
@@ -87,7 +91,7 @@ export default function UploadPage() {
                 )}&file_name=${encodeURIComponent(result.file_name)}`,
               )
             }
-            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-900 transition hover:bg-accent-muted"
+            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-ink-900 transition-colors duration-150 ease-out-quart hover:bg-accent-muted"
           >
             Start review →
           </button>
@@ -100,10 +104,10 @@ export default function UploadPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-ink-700 px-3 py-2.5">
-      <div className="text-xs uppercase tracking-wide text-slate-500">
+      <div className="text-xs uppercase tracking-wide text-muted">
         {label}
       </div>
-      <div className="mt-0.5 truncate font-medium text-slate-100">{value}</div>
+      <div className="mt-0.5 truncate font-medium text-bright">{value}</div>
     </div>
   );
 }

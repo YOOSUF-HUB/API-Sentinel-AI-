@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Ground is Void, not transparent: the mark has to hold in a light browser
+       tab as well as a dark one, and this system's identity is near-black. -->
+  <rect width="32" height="32" rx="7" fill="#0a0c10" />
+  <!-- The shield already in the header, drawn rather than borrowed from the
+       emoji font — 16px is exactly where an emoji stops being legible. It fills
+       ~75% of the canvas because a favicon is read at 16px, not admired at 64. -->
+  <path
+    d="M16 3.2 27.5 7.2v9.6c0 6.2-4.7 10.8-11.5 12.4C9.2 27.6 4.5 23 4.5 16.8V7.2z"
+    fill="#38bdf8"
+  />
+  <!-- The check the trace draws on a completed node, knocked out in Void.
+       Security that reports, not security that alarms. -->
+  <path
+    d="M10.9 16.3 14.7 20.1 21.5 12.5"
+    fill="none"
+    stroke="#0a0c10"
+    stroke-width="2.9"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

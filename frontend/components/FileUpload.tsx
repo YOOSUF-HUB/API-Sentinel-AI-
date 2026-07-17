@@ -73,7 +73,7 @@ export default function FileUpload({ onSelect, disabled }: FileUploadProps) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={[
-          "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition",
+          "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-14 text-center transition duration-150 ease-out-quart",
           dragging
             ? "border-accent bg-accent/5"
             : "border-ink-500 bg-ink-800 hover:border-ink-500/80 hover:bg-ink-700",
@@ -81,13 +81,13 @@ export default function FileUpload({ onSelect, disabled }: FileUploadProps) {
         ].join(" ")}
       >
         <div className="text-3xl">📄</div>
-        <div className="text-base font-medium text-slate-100">
+        <div className="text-base font-medium text-bright">
           Drag &amp; drop your API spec here
         </div>
-        <div className="text-sm text-slate-400">
+        <div className="text-sm text-secondary">
           or <span className="text-accent">browse</span> to choose a file
         </div>
-        <div className="mt-1 text-xs text-slate-500">
+        <div className="mt-1 text-xs text-muted">
           Supports OpenAPI/Swagger (JSON, YAML), plain text, Markdown, and PDF
         </div>
         <input
@@ -101,7 +101,9 @@ export default function FileUpload({ onSelect, disabled }: FileUploadProps) {
       </div>
 
       {error && (
-        <p className="mt-3 text-sm text-severity-critical">{error}</p>
+        <p className="mt-3 text-sm text-severity-critical motion-safe:animate-rise-in">
+          {error}
+        </p>
       )}
     </div>
   );

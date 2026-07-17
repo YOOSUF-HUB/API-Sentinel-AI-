@@ -12,7 +12,7 @@ body {
 }
 
 body {
-  @apply bg-ink-900 text-slate-200 antialiased;
+  @apply bg-ink-900 text-body antialiased;
 }
 
 /* Reduced motion is a floor, not a per-component opt-in: anything animated in

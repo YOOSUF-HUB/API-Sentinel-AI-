@@ -138,11 +138,11 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-bright">
           Review
         </h1>
-        <p className="text-sm text-slate-400">
-          Reviewing <span className="font-medium text-slate-200">{fileName}</span>.
+        <p className="text-sm text-secondary">
+          Reviewing <span className="font-medium text-body">{fileName}</span>.
           Pick a focus or ask your own question.
         </p>
       </div>
@@ -158,7 +158,7 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
               runReview(preset.mode, preset.question);
             }}
             className={[
-              "flex flex-col items-start gap-1 rounded-xl border px-3.5 py-3 text-left transition",
+              "flex flex-col items-start gap-1 rounded-xl border px-3.5 py-3 text-left transition duration-150 ease-out-quart",
               activeMode === preset.mode && busy
                 ? "border-accent bg-accent/10"
                 : "border-ink-600 bg-ink-800 hover:border-ink-500 hover:bg-ink-700",
@@ -166,7 +166,7 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
             ].join(" ")}
           >
             <span className="text-lg">{preset.icon}</span>
-            <span className="text-sm font-medium text-slate-100">
+            <span className="text-sm font-medium text-bright">
               {preset.label}
             </span>
           </button>
@@ -184,7 +184,7 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
         <div className="flex-1">
           <label
             htmlFor="question"
-            className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500"
+            className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted"
           >
             Ask your own
           </label>
@@ -201,20 +201,23 @@ export default function ChatInterface({ docId, fileName }: ChatInterfaceProps) {
             }}
             rows={2}
             placeholder="e.g. Are the pagination parameters documented consistently?"
-            className="w-full resize-none rounded-xl border border-ink-600 bg-ink-800 px-3.5 py-2.5 text-sm text-slate-200 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+            className="w-full resize-none rounded-xl border border-ink-600 bg-ink-800 px-3.5 py-2.5 text-sm text-body placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
           />
         </div>
+        {/* Disabled drops the accent entirely rather than fading it: Signal Cyan
+            means "this is the action", so a 40%-opacity cyan button reads as an
+            enabled control behind fog. Unavailable is a surface, not a dimmer. */}
         <button
           type="submit"
           disabled={busy || !question.trim()}
-          className="shrink-0 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-ink-900 transition hover:bg-accent-muted disabled:cursor-not-allowed disabled:opacity-40"
+          className="shrink-0 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-ink-900 transition-colors duration-150 ease-out-quart hover:bg-accent-muted disabled:cursor-not-allowed disabled:bg-ink-700 disabled:text-muted"
         >
           {busy ? "Reviewing…" : "Review"}
         </button>
       </form>
 
       {error && phase === "error" && (
-        <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 px-4 py-3 text-sm text-severity-critical-bright motion-safe:animate-rise-in">
           {error}
         </div>
       )}
